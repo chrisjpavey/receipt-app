@@ -281,7 +281,7 @@
             <div class="status" id="status"></div>
             
             <div class="file-input-wrapper">
-                <input type="file" id="fileInput" accept="image/*" capture="environment">
+                <input type="file" id="fileInput" accept="image/*">
                 <label for="fileInput" class="file-input-label">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
@@ -292,6 +292,8 @@
             </div>
             
             <div class="preview-area" id="previewArea"></div>
+            
+            <button class="btn" id="clearBtn" style="display:none; background:#f56565; color:white; margin-bottom:15px;">✕ Clear Photo</button>
             
             <input type="text" class="note-input" id="noteInput" placeholder="Add a quick note (optional)">
             
@@ -431,7 +433,18 @@
                 selectedFile = file;
                 showPreview(file);
                 document.getElementById('uploadBtn').disabled = false;
+                document.getElementById('clearBtn').style.display = 'block';
             }
+        });
+        
+        // Clear photo button
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            selectedFile = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('previewArea').innerHTML = '';
+            document.getElementById('uploadBtn').disabled = true;
+            document.getElementById('clearBtn').style.display = 'none';
+            document.getElementById('noteInput').value = '';
         });
         
         function showPreview(file) {
@@ -463,6 +476,7 @@
                     document.getElementById('previewArea').innerHTML = '';
                     uploadBtn.disabled = true;
                     uploadBtn.textContent = 'Upload Receipt';
+                    document.getElementById('clearBtn').style.display = 'none';
                     document.getElementById('status').classList.remove('show');
                 }, 2000);
                 
