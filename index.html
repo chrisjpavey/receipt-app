@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Receipts">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23667eea' width='100' height='100'/><text y='75' font-size='80' text-anchor='middle' x='50'>📸</text></svg>">
+    <title>Receipt Uploader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        
+        .setup-section {
+            margin-bottom: 20px;
+        }
+        
+        .setup-section label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .setup-section input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .setup-section input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(72, 187, 120, 0.4);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .upload-section {
+            display: none;
+        }
+        
+        .upload-section.active {
+            display: block;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        
+        .file-input-wrapper input[type="file"] {
+            display: none;
+        }
+        
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            border: 3px dashed #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+        
+        .file-input-label:hover {
+            border-color: #667eea;
+            background: #f0f2ff;
+        }
+        
+        .file-input-label svg {
+            margin-right: 10px;
+        }
+        
+        .preview-area {
+            margin: 15px 0;
+            text-align: center;
+        }
+        
+        .preview-area img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .note-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            font-family: inherit;
+        }
+        
+        .note-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+            font-size: 14px;
+        }
+        
+        .status.show {
+            display: block;
+        }
+        
+        .status.success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+        
+        .status.error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #fc8181;
+        }
+        
+        .status.info {
+            background: #bee3f8;
+            color: #2c5282;
+            border: 1px solid #90cdf4;
+        }
+        
+        .user-info {
+            display: none;
+            padding: 12px;
+            background: #f0f2ff;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        .user-info.show {
+            display: block;
+        }
+        
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .signout-btn {
+            background: #e0e0e0;
+            color: #333;
+            font-size: 14px;
+            padding: 10px;
+        }
+
+        .setup-card {
+            display: none;
+        }
+
+        .setup-card.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📸 Receipt Uploader</h1>
+            <p>Quick and simple receipt capture</p>
+        </div>
+        
+        <div class="card setup-card show" id="setupCard">
+            <div class="setup-section">
+                <label for="clientId">Google Client ID</label>
+                <input type="text" id="clientId" placeholder="Your Google OAuth Client ID">
+                <p class="help-text">Get this from Google Cloud Console</p>
+            </div>
+            
+            <div class="setup-section">
+                <label for="folderId">Drive Folder ID</label>
+                <input type="text" id="folderId" placeholder="Google Drive folder ID">
+                <p class="help-text">Copy from your Drive folder URL</p>
+            </div>
+            
+            <button class="btn btn-primary" id="saveConfigBtn">Save Configuration</button>
+            <button class="btn btn-primary" id="connectBtn" style="display:none;">Connect to Google Drive</button>
+            
+            <div class="user-info" id="userInfo"></div>
+        </div>
+        
+        <div class="card upload-section" id="uploadSection">
+            <div class="status" id="status"></div>
+            
+            <div class="file-input-wrapper">
+                <input type="file" id="fileInput" accept="image/*" capture="environment">
+                <label for="fileInput" class="file-input-label">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
+                    <span>Tap to take photo or select image</span>
+                </label>
+            </div>
+            
+            <div class="preview-area" id="previewArea"></div>
+            
+            <input type="text" class="note-input" id="noteInput" placeholder="Add a quick note (optional)">
+            
+            <button class="btn btn-success" id="uploadBtn" disabled>Upload Receipt</button>
+            <button class="btn signout-btn" id="signoutBtn">Sign Out & Reset</button>
+        </div>
+    </div>
+    
+    <script>
+        const CONFIG_KEY = 'receiptUploader_config';
+        const TOKEN_KEY = 'receiptUploader_token';
+        const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+        
+        let accessToken = null;
+        let selectedFile = null;
+        let config = null;
+        
+        // Load Google API
+        const script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+        
+        // Initialize on load
+        window.addEventListener('load', () => {
+            loadConfig();
+            checkExistingAuth();
+        });
+        
+        function loadConfig() {
+            const savedConfig = localStorage.getItem(CONFIG_KEY);
+            if (savedConfig) {
+                config = JSON.parse(savedConfig);
+                document.getElementById('clientId').value = config.clientId;
+                document.getElementById('folderId').value = config.folderId;
+                document.getElementById('saveConfigBtn').textContent = 'Update Configuration';
+                document.getElementById('connectBtn').style.display = 'block';
+            }
+        }
+        
+        function saveConfig() {
+            const clientId = document.getElementById('clientId').value.trim();
+            const folderId = document.getElementById('folderId').value.trim();
+            
+            if (!clientId || !folderId) {
+                showStatus('Please enter both Client ID and Folder ID', 'error');
+                return false;
+            }
+            
+            config = { clientId, folderId };
+            localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
+            return true;
+        }
+        
+        function checkExistingAuth() {
+            const savedToken = localStorage.getItem(TOKEN_KEY);
+            if (savedToken && config) {
+                accessToken = savedToken;
+                validateAndUseToken();
+            }
+        }
+        
+        async function validateAndUseToken() {
+            try {
+                const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+                    headers: { Authorization: `Bearer ${accessToken}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showUploadSection(data.email);
+                } else {
+                    // Token expired, clear it
+                    localStorage.removeItem(TOKEN_KEY);
+                    accessToken = null;
+                }
+            } catch (error) {
+                localStorage.removeItem(TOKEN_KEY);
+                accessToken = null;
+            }
+        }
+        
+        document.getElementById('saveConfigBtn').addEventListener('click', () => {
+            if (saveConfig()) {
+                showStatus('Configuration saved!', 'success');
+                document.getElementById('connectBtn').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('status').classList.remove('show');
+                }, 2000);
+            }
+        });
+        
+        document.getElementById('connectBtn').addEventListener('click', () => {
+            if (!config) {
+                if (!saveConfig()) return;
+            }
+            initGoogleAuth();
+        });
+        
+        function initGoogleAuth() {
+            const client = google.accounts.oauth2.initTokenClient({
+                client_id: config.clientId,
+                scope: SCOPES,
+                callback: async (response) => {
+                    if (response.access_token) {
+                        accessToken = response.access_token;
+                        localStorage.setItem(TOKEN_KEY, accessToken);
+                        
+                        try {
+                            const userResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+                                headers: { Authorization: `Bearer ${accessToken}` }
+                            });
+                            const userData = await userResponse.json();
+                            showUploadSection(userData.email);
+                        } catch (error) {
+                            showUploadSection('Connected');
+                        }
+                    }
+                },
+            });
+            client.requestAccessToken();
+        }
+        
+        function showUploadSection(email) {
+            document.getElementById('setupCard').classList.remove('show');
+            document.getElementById('uploadSection').classList.add('active');
+            const userInfo = document.getElementById('userInfo');
+            userInfo.innerHTML = `✓ Connected as: ${email}`;
+            userInfo.classList.add('show');
+        }
+        
+        // File selection
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                selectedFile = file;
+                showPreview(file);
+                document.getElementById('uploadBtn').disabled = false;
+            }
+        });
+        
+        function showPreview(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const preview = document.getElementById('previewArea');
+                preview.innerHTML = `<img src="${e.target.result}" alt="Receipt preview">`;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // Upload button
+        document.getElementById('uploadBtn').addEventListener('click', async () => {
+            if (!selectedFile) return;
+            
+            const uploadBtn = document.getElementById('uploadBtn');
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'Uploading...';
+            
+            try {
+                await uploadToGoogleDrive(selectedFile);
+                showStatus('Receipt uploaded successfully! ✓', 'success');
+                
+                // Reset
+                setTimeout(() => {
+                    selectedFile = null;
+                    document.getElementById('fileInput').value = '';
+                    document.getElementById('noteInput').value = '';
+                    document.getElementById('previewArea').innerHTML = '';
+                    uploadBtn.disabled = true;
+                    uploadBtn.textContent = 'Upload Receipt';
+                    document.getElementById('status').classList.remove('show');
+                }, 2000);
+                
+            } catch (error) {
+                if (error.message === 'Token expired') {
+                    showStatus('Session expired. Please reconnect.', 'error');
+                    localStorage.removeItem(TOKEN_KEY);
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    showStatus('Upload failed. Please try again.', 'error');
+                    uploadBtn.disabled = false;
+                    uploadBtn.textContent = 'Upload Receipt';
+                }
+            }
+        });
+        
+        async function uploadToGoogleDrive(file) {
+            const note = document.getElementById('noteInput').value.trim();
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+            const fileName = note 
+                ? `${timestamp}_${note.substring(0, 30)}.jpg`
+                : `${timestamp}_receipt.jpg`;
+            
+            const metadata = {
+                name: fileName,
+                parents: [config.folderId]
+            };
+            
+            const formData = new FormData();
+            formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+            formData.append('file', file);
+            
+            const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                },
+                body: formData
+            });
+            
+            if (response.status === 401) {
+                throw new Error('Token expired');
+            }
+            
+            if (!response.ok) {
+                throw new Error('Upload failed');
+            }
+            
+            return response.json();
+        }
+        
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status show ${type}`;
+        }
+        
+        // Sign out
+        document.getElementById('signoutBtn').addEventListener('click', () => {
+            if (confirm('This will sign you out and clear all saved settings. Continue?')) {
+                localStorage.removeItem(CONFIG_KEY);
+                localStorage.removeItem(TOKEN_KEY);
+                location.reload();
+            }
+        });
+    </script>
+</body>
+</html>
