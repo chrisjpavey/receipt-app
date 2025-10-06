@@ -2,7 +2,7 @@
   "name": "Receipt Uploader",
   "short_name": "Receipts",
   "description": "Quick and simple receipt capture to Google Drive",
-  "start_url": "/",
+  "start_url": "/receipt-app/",
   "display": "standalone",
   "background_color": "#667eea",
   "theme_color": "#667eea",
